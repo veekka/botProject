@@ -41,12 +41,13 @@ def data_b(product):
        brand TEXT,
        title TEXT);
     """)
-    conn.commit()
-    cur.execute(f"DELETE FROM items WHERE art = {product[0]};")
-    conn.commit()
 
-    cur.execute("INSERT INTO items VALUES(?,?,?);", product)
-    conn.commit()
+    cur.execute(f"SELECT Count(art) FROM items WHERE art = {product[0]};")
+    count = cur.fetchone()[0]
+
+    if count == 0:
+        cur.execute("INSERT INTO items VALUES(?,?,?);", product)
+        conn.commit()
 
     cur.execute("SELECT * FROM items;")
     all_results = cur.fetchall()
@@ -70,7 +71,7 @@ def get_text_messages(message):
     else:
         bot.send_message(message.from_user.id, "Команда или номер артикула введены неверно")
 
-    if br is not None or tit is not None:
+    if (br is not None or tit is not None) and (br != "Товара с таким артикулом не существует" and tit != "Товара с таким артикулом не существует"):
         br = parser(req[1]).get('brand')
         tit = parser(req[1]).get('title')
         product = (req[1], br, tit)
